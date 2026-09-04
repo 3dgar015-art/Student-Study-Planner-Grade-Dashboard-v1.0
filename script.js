@@ -16,11 +16,21 @@ const elements = {
   assignmentCourse: document.querySelector("#assignment-course"),
   assignmentDueDate: document.querySelector("#assignment-due-date"),
   assignmentPriority: document.querySelector("#assignment-priority"),
+  assignmentGrade: document.querySelector("#assignment-grade"),
   assignmentStatus: document.querySelector("#assignment-status"),
   assignmentCancel: document.querySelector("#assignment-cancel"),
   assignmentSubmitLabel: document.querySelector("#assignment-submit-label"),
   assignmentList: document.querySelector("#assignment-list"),
-  assignmentCount: document.querySelector("#assignment-count")
+  assignmentCount: document.querySelector("#assignment-count"),
+  assignmentFilter: document.querySelector("#assignment-filter"),
+  filterValueWrap: document.querySelector("#filter-value-wrap"),
+  filterValueLabel: document.querySelector("#filter-value-label"),
+  filterValue: document.querySelector("#filter-value"),
+  statTotal: document.querySelector("#stat-total"),
+  statCompleted: document.querySelector("#stat-completed"),
+  statRemaining: document.querySelector("#stat-remaining"),
+  statOverdue: document.querySelector("#stat-overdue"),
+  statAverage: document.querySelector("#stat-average")
 };
 
 function loadState() {
@@ -55,10 +65,69 @@ function formatDate(dateString) {
   return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(date);
 }
 
+function isOverdue(assignment) {
+  if (!assignment.dueDate || assignment.status === "Completed") return false;
+  const today = new Date();
+  const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  return assignment.dueDate < todayString;
+}
+
+function getGrade(assignment) {
+  if (assignment.grade === "" || assignment.grade === null || assignment.grade === undefined) return null;
+  const grade = Number(assignment.grade);
+  return Number.isFinite(grade) && grade >= 0 && grade <= 100 ? grade : null;
+}
+
 function render() {
   renderCourses();
   renderCourseOptions();
+  renderDashboard();
+  renderFilterOptions();
   renderAssignments();
+}
+
+function renderDashboard() {
+  const total = state.assignments.length;
+  const completed = state.assignments.filter((assignment) => assignment.status === "Completed").length;
+  const overdue = state.assignments.filter(isOverdue).length;
+  const grades = state.assignments.map(getGrade).filter((grade) => grade !== null);
+  const average = grades.length ? (grades.reduce((sum, grade) => sum + grade, 0) / grades.length).toFixed(1).replace(".0", "") : "—";
+  elements.statTotal.textContent = total;
+  elements.statCompleted.textContent = completed;
+  elements.statRemaining.textContent = total - completed;
+  elements.statOverdue.textContent = overdue;
+  elements.statAverage.textContent = average;
+}
+
+function renderFilterOptions() {
+  const filterType = elements.assignmentFilter.value;
+  const showValue = filterType === "priority" || filterType === "course";
+  elements.filterValueWrap.classList.toggle("hidden", !showValue);
+  if (!showValue) return;
+  const previousValue = elements.filterValue.value;
+  const values = filterType === "priority"
+    ? ["Low", "Medium", "High"]
+    : state.courses.map((course) => course.id);
+  elements.filterValueLabel.textContent = filterType === "priority" ? "Priority" : "Course";
+  elements.filterValue.innerHTML = values.map((value) => {
+    if (filterType === "priority") return `<option value="${value}">${value}</option>`;
+    const course = state.courses.find((item) => item.id === value);
+    return `<option value="${value}">${escapeHtml(course.name)} (${escapeHtml(course.code)})</option>`;
+  }).join("");
+  if (values.includes(previousValue)) elements.filterValue.value = previousValue;
+}
+
+function getFilteredAssignments() {
+  const filterType = elements.assignmentFilter.value;
+  const filterValue = elements.filterValue.value;
+  return state.assignments.filter((assignment) => {
+    if (filterType === "completed") return assignment.status === "Completed";
+    if (filterType === "remaining") return assignment.status !== "Completed";
+    if (filterType === "overdue") return isOverdue(assignment);
+    if (filterType === "priority") return assignment.priority === filterValue;
+    if (filterType === "course") return assignment.courseId === filterValue;
+    return true;
+  });
 }
 
 function renderCourses() {
@@ -96,12 +165,18 @@ function renderAssignments() {
     return;
   }
   const courseNames = new Map(state.courses.map((course) => [course.id, `${course.name} · ${course.code}`]));
-  const sortedAssignments = [...state.assignments].sort((first, second) => first.dueDate.localeCompare(second.dueDate));
+  const sortedAssignments = getFilteredAssignments().sort((first, second) => first.dueDate.localeCompare(second.dueDate));
+  if (!sortedAssignments.length) {
+    elements.assignmentList.innerHTML = '<p class="empty-state">No assignments match this filter.</p>';
+    return;
+  }
   elements.assignmentList.innerHTML = sortedAssignments.map((assignment) => {
     const priorityClass = assignment.priority.toLowerCase();
     const statusClass = assignment.status.toLowerCase().replace(" ", "-");
+    const grade = getGrade(assignment);
+    const overdueClass = isOverdue(assignment) ? " overdue" : "";
     return `
-      <article class="assignment-item">
+      <article class="assignment-item${overdueClass}">
         <div class="assignment-top">
           <div>
             <p class="assignment-title">${escapeHtml(assignment.title)}</p>
@@ -116,6 +191,8 @@ function renderAssignments() {
           <span class="tag tag-date">Due ${formatDate(assignment.dueDate)}</span>
           <span class="tag tag-priority ${priorityClass}">${escapeHtml(assignment.priority)} priority</span>
           <span class="tag tag-status ${statusClass}">${escapeHtml(assignment.status)}</span>
+          <span class="tag tag-grade">${grade === null ? "Ungraded" : `${grade}%`}</span>
+          ${isOverdue(assignment) ? '<span class="tag tag-overdue">Overdue</span>' : ""}
         </div>
       </article>`;
   }).join("");
@@ -132,6 +209,7 @@ function resetAssignmentForm() {
   elements.assignmentForm.reset();
   elements.assignmentId.value = "";
   elements.assignmentPriority.value = "Medium";
+  elements.assignmentGrade.value = "";
   elements.assignmentStatus.value = "Not Started";
   elements.assignmentSubmitLabel.textContent = "Add assignment";
   elements.assignmentCancel.classList.add("hidden");
@@ -156,6 +234,7 @@ function editAssignment(id) {
   elements.assignmentCourse.value = assignment.courseId;
   elements.assignmentDueDate.value = assignment.dueDate;
   elements.assignmentPriority.value = assignment.priority;
+  elements.assignmentGrade.value = assignment.grade ?? "";
   elements.assignmentStatus.value = assignment.status;
   elements.assignmentSubmitLabel.textContent = "Save changes";
   elements.assignmentCancel.classList.remove("hidden");
@@ -180,6 +259,7 @@ elements.assignmentForm.addEventListener("submit", (event) => {
     courseId: elements.assignmentCourse.value,
     dueDate: elements.assignmentDueDate.value,
     priority: elements.assignmentPriority.value,
+    grade: elements.assignmentGrade.value === "" ? "" : Number(elements.assignmentGrade.value),
     status: elements.assignmentStatus.value
   };
   const existingAssignment = state.assignments.find((assignment) => assignment.id === elements.assignmentId.value);
@@ -192,6 +272,8 @@ elements.assignmentForm.addEventListener("submit", (event) => {
 
 elements.courseCancel.addEventListener("click", resetCourseForm);
 elements.assignmentCancel.addEventListener("click", resetAssignmentForm);
+elements.assignmentFilter.addEventListener("change", () => { renderFilterOptions(); renderAssignments(); });
+elements.filterValue.addEventListener("change", renderAssignments);
 
 document.addEventListener("click", (event) => {
   const button = event.target.closest("[data-action]");

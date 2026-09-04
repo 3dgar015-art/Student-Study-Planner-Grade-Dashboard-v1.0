@@ -17,7 +17,7 @@
         <span class="brand-mark" aria-hidden="true">SS</span>
         <span>Study Planner</span>
       </a>
-      <span class="version-label">Version 1.0</span>
+      <span class="version-label">Version 2.0</span>
     </header>
 
     <main id="top">
@@ -30,6 +30,23 @@
         <div class="intro-note" aria-label="Planner note">
           <span class="note-dot"></span>
           <span>Small steps add up.</span>
+        </div>
+      </section>
+
+      <section class="dashboard" aria-labelledby="dashboard-heading">
+        <div class="dashboard-heading">
+          <div>
+            <p class="section-kicker">Quick view</p>
+            <h2 id="dashboard-heading">Grade Dashboard</h2>
+          </div>
+          <p class="dashboard-caption">A clear read on your workload and progress.</p>
+        </div>
+        <div class="stat-grid" aria-live="polite">
+          <article class="stat-card stat-total"><span class="stat-label">Total assignments</span><strong id="stat-total">0</strong></article>
+          <article class="stat-card stat-completed"><span class="stat-label">Completed</span><strong id="stat-completed">0</strong></article>
+          <article class="stat-card stat-remaining"><span class="stat-label">Remaining</span><strong id="stat-remaining">0</strong></article>
+          <article class="stat-card stat-overdue"><span class="stat-label">Overdue</span><strong id="stat-overdue">0</strong></article>
+          <article class="stat-card stat-average"><span class="stat-label">Average grade</span><strong id="stat-average">—</strong><span class="stat-suffix">/ 100</span></article>
         </div>
       </section>
 
@@ -100,6 +117,10 @@
                 </select>
               </label>
             </div>
+            <label class="field grade-field">
+              <span>Grade <small>(optional, 0–100)</small></span>
+              <input id="assignment-grade" name="assignmentGrade" type="number" min="0" max="100" step="0.01" placeholder="e.g. 92.5">
+            </label>
             <label class="field field-status">
               <span>Status</span>
               <select id="assignment-status" name="assignmentStatus">
@@ -115,6 +136,23 @@
           </form>
 
           <div class="list-divider"></div>
+          <div class="filter-bar">
+            <label class="filter-field">
+              <span>Filter assignments</span>
+              <select id="assignment-filter" aria-label="Filter assignments">
+                <option value="all">All</option>
+                <option value="completed">Completed</option>
+                <option value="remaining">Remaining</option>
+                <option value="overdue">Overdue</option>
+                <option value="priority">Priority</option>
+                <option value="course">Course</option>
+              </select>
+            </label>
+            <label class="filter-field hidden" id="filter-value-wrap">
+              <span id="filter-value-label">Filter value</span>
+              <select id="filter-value" aria-label="Filter value"></select>
+            </label>
+          </div>
           <div id="assignment-list" class="assignment-list" aria-live="polite"></div>
         </section>
       </section>
