@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A simple student study planner and grade dashboard for managing courses and assignments.">
+  <title>Student Study Planner & Grade Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="Student Study Planner home">
+        <span class="brand-mark" aria-hidden="true">SS</span>
+        <span>Study Planner</span>
+      </a>
+      <span class="version-label">Version 1.0</span>
+    </header>
+
+    <main id="top">
+      <section class="intro" aria-labelledby="page-title">
+        <div class="intro-copy">
+          <p class="eyebrow">Your semester, in one place</p>
+          <h1 id="page-title">Plan with clarity.<br><em>Study with intention.</em></h1>
+          <p class="intro-text">Keep your courses and next assignments organized so you always know what deserves your attention.</p>
+        </div>
+        <div class="intro-note" aria-label="Planner note">
+          <span class="note-dot"></span>
+          <span>Small steps add up.</span>
+        </div>
+      </section>
+
+      <section class="workspace" aria-label="Planner workspace">
+        <section class="panel courses-panel" aria-labelledby="courses-heading">
+          <div class="panel-heading">
+            <div>
+              <p class="section-kicker">01 / Foundation</p>
+              <h2 id="courses-heading">Course Management</h2>
+            </div>
+            <span class="count-badge" id="course-count">0 courses</span>
+          </div>
+
+          <form id="course-form" class="form-stack">
+            <input type="hidden" id="course-id">
+            <div class="field-row">
+              <label class="field">
+                <span>Course name</span>
+                <input id="course-name" name="courseName" type="text" placeholder="e.g. Introduction to Biology" required maxlength="80">
+              </label>
+              <label class="field field-code">
+                <span>Course code</span>
+                <input id="course-code" name="courseCode" type="text" placeholder="e.g. BIO 101" required maxlength="20">
+              </label>
+            </div>
+            <div class="form-actions">
+              <button class="button button-primary" type="submit"><span id="course-submit-label">Add course</span><span aria-hidden="true">+</span></button>
+              <button class="button button-quiet hidden" id="course-cancel" type="button">Cancel</button>
+            </div>
+          </form>
+
+          <div class="list-divider"></div>
+          <div id="course-list" class="course-list" aria-live="polite"></div>
+        </section>
+
+        <section class="panel assignments-panel" aria-labelledby="assignments-heading">
+          <div class="panel-heading">
+            <div>
+              <p class="section-kicker">02 / The work ahead</p>
+              <h2 id="assignments-heading">Assignment Management</h2>
+            </div>
+            <span class="count-badge" id="assignment-count">0 assignments</span>
+          </div>
+
+          <form id="assignment-form" class="form-stack">
+            <input type="hidden" id="assignment-id">
+            <label class="field">
+              <span>Assignment title</span>
+              <input id="assignment-title" name="assignmentTitle" type="text" placeholder="e.g. Lab report: Cell structure" required maxlength="100">
+            </label>
+            <div class="field-row field-row-three">
+              <label class="field">
+                <span>Course</span>
+                <select id="assignment-course" name="assignmentCourse" required>
+                  <option value="">Select a course</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>Due date</span>
+                <input id="assignment-due-date" name="assignmentDueDate" type="date" required>
+              </label>
+              <label class="field">
+                <span>Priority</span>
+                <select id="assignment-priority" name="assignmentPriority">
+                  <option value="Low">Low</option>
+                  <option value="Medium" selected>Medium</option>
+                  <option value="High">High</option>
+                </select>
+              </label>
+            </div>
+            <label class="field field-status">
+              <span>Status</span>
+              <select id="assignment-status" name="assignmentStatus">
+                <option value="Not Started" selected>Not Started</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
+              </select>
+            </label>
+            <div class="form-actions">
+              <button class="button button-primary" id="assignment-submit" type="submit"><span id="assignment-submit-label">Add assignment</span><span aria-hidden="true">+</span></button>
+              <button class="button button-quiet hidden" id="assignment-cancel" type="button">Cancel</button>
+            </div>
+          </form>
+
+          <div class="list-divider"></div>
+          <div id="assignment-list" class="assignment-list" aria-live="polite"></div>
+        </section>
+      </section>
+    </main>
+
+    <footer class="footer"><span>Student Study Planner</span><span>Everything saved in your browser</span></footer>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
